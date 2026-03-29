@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 
-const BLINK_WINDOW = 10000; // 10 seconds
+const BLINK_WINDOW = 5000; // 5 seconds
 const BLINK_THRESHOLD = 10;
 
 export default function BlinkDetector() {
@@ -29,7 +29,7 @@ export default function BlinkDetector() {
           Simulate Blink
         </button>
         <div className="text-lg mb-4 text-gray-300">
-          Blinks in last 10s: <span className="font-bold text-white">{blinks.length}</span>
+          Blinks in last 5s: <span className="font-bold text-white">{blinks.length}</span>
         </div>
         {alert && (
           <div className="p-4 bg-red-600 text-white rounded font-semibold text-center w-full shadow-md">
