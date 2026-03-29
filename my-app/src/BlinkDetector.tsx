@@ -1,15 +1,18 @@
 import { useState } from "react";
 
+
+const BLINK_WINDOW = 10000; // 10 seconds
 const BLINK_THRESHOLD = 10;
 
 export default function BlinkDetector() {
+
   const [blinks, setBlinks] = useState<number[]>([]);
   const [alert, setAlert] = useState(false);
 
   const handleBlink = () => {
     const now = Date.now();
     setBlinks(prev => {
-      const updated = [...prev, now];
+      const updated = [...prev.filter(ts => now - ts < BLINK_WINDOW), now];
       if (updated.length >= BLINK_THRESHOLD) setAlert(true);
       return updated;
     });
@@ -26,7 +29,7 @@ export default function BlinkDetector() {
           Simulate Blink
         </button>
         <div className="text-lg mb-4 text-gray-300">
-          Total blinks: <span className="font-bold text-white">{blinks.length}</span>
+          Blinks in last 10s: <span className="font-bold text-white">{blinks.length}</span>
         </div>
         {alert && (
           <div className="p-4 bg-red-600 text-white rounded font-semibold text-center w-full shadow-md">
