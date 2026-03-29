@@ -33,12 +33,12 @@ export default function BlinkDetector() {
         <span className="font-bold text-3xl">{blinks.length}</span>
       </div>
       {alert && (
-        <div className="flex flex-col gap-1 p-4 rounded-lg bg-[#f8d7da] border border-[#f5c2c7] text-[#842029] w-full max-w-md shadow-md">
+        <div className="flex flex-col gap-2 p-6 rounded-xl bg-[#f8d7da] border border-[#f5c2c7] text-[#842029] w-full max-w-lg shadow-xl items-center">
           <div className="flex items-center mb-1">
-            <svg className="mr-2" width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f5c2c7"/><path d="M12 8v4" stroke="#842029" strokeWidth="2" strokeLinecap="round"/><circle cx="12" cy="16" r="1" fill="#842029"/></svg>
-            <span className="font-semibold">Alert!</span>
+            <svg className="mr-3" width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f5c2c7"/><path d="M12 8v6" stroke="#842029" strokeWidth="2" strokeLinecap="round"/><circle cx="12" cy="17" r="1.5" fill="#842029"/></svg>
+            <span className="font-bold text-2xl">Alert!</span>
           </div>
-          <div>Abnormal blink pattern detected!</div>
+          <div className="text-lg font-semibold text-center">Abnormal blink pattern detected!</div>
         </div>
       )}
     </div>
