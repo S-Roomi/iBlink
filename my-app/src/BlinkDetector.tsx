@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 
@@ -19,24 +20,27 @@ export default function BlinkDetector() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#13131a]">
-      <div className="bg-[#181820] rounded-xl shadow-lg px-10 py-12 flex flex-col items-center w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-gray-100 text-center">Bank Robbery Alert</h1>
-        <button
-          className="mb-6 px-8 py-3 bg-green-500 hover:bg-green-600 text-white text-lg font-semibold rounded transition"
-          onClick={handleBlink}
-        >
-          Simulate Blink
-        </button>
-        <div className="text-lg mb-4 text-gray-300">
-          Blinks in last 5s: <span className="font-bold text-white">{blinks.length}</span>
-        </div>
-        {alert && (
-          <div className="p-4 bg-red-600 text-white rounded font-semibold text-center w-full shadow-md">
-            Alert! Abnormal blink pattern detected!
-          </div>
-        )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5DC] font-['Roboto','Arial','sans-serif']">
+      <h1 className="text-3xl font-bold mb-8 text-black text-center font-['Roboto','Arial','sans-serif']">Bank Robbery Alert</h1>
+      <button
+        className="mb-8 px-8 py-3 bg-green-600 hover:bg-green-700 text-white text-lg font-normal rounded-full transition shadow-lg min-w-[180px] tracking-wide font-['Roboto','Arial','sans-serif']"
+        onClick={handleBlink}
+      >
+        Button
+      </button>
+      <div className="text-2xl mb-6 text-black font-['Roboto','Arial','sans-serif'] flex items-center gap-2">
+        <span className="">Blinks in last <span className="font-semibold">5s</span>:</span>
+        <span className="font-bold text-3xl">{blinks.length}</span>
       </div>
+      {alert && (
+        <div className="flex flex-col gap-1 p-4 rounded-lg bg-[#f8d7da] border border-[#f5c2c7] text-[#842029] w-full max-w-md shadow-md">
+          <div className="flex items-center mb-1">
+            <svg className="mr-2" width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f5c2c7"/><path d="M12 8v4" stroke="#842029" strokeWidth="2" strokeLinecap="round"/><circle cx="12" cy="16" r="1" fill="#842029"/></svg>
+            <span className="font-semibold">Alert!</span>
+          </div>
+          <div>Abnormal blink pattern detected!</div>
+        </div>
+      )}
     </div>
   );
 }
