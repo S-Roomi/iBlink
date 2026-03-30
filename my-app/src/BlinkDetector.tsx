@@ -15,6 +15,10 @@ export default function BlinkDetector() {
       return updated;
     });
   };
+  const resetBlink = () => {
+    setBlinks([])
+    setAlert(false)
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#13131a]">
@@ -34,9 +38,12 @@ export default function BlinkDetector() {
             <div className="p-4 bg-red-600 text-white rounded font-semibold text-center w-full shadow-md">
               Alert! Abnormal blink pattern detected!
             </div>
-            <div className="p-5 ">
-              Reset counter
-            </div>
+            <button 
+            className="p-5 "
+            onClick={resetBlink}
+            >
+              Reset blink detection
+            </button>
           </div>
         )}
       </div>
