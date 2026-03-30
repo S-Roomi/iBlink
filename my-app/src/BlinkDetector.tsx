@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./App.css";
 
 const BLINK_THRESHOLD = 10;
 
@@ -18,7 +19,7 @@ export default function BlinkDetector() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#13131a]">
       <div className="bg-[#181820] rounded-xl shadow-lg px-10 py-12 flex flex-col items-center w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-gray-100 text-center">Bank Robbery Alert</h1>
+        <h1 className="blinking text-3xl font-bold mb-6 text-gray-100 text-center">i-Blink</h1>
         <button
           className="mb-6 px-8 py-3 bg-green-500 hover:bg-green-600 text-white text-lg font-semibold rounded transition"
           onClick={handleBlink}
@@ -29,8 +30,13 @@ export default function BlinkDetector() {
           Total blinks: <span className="font-bold text-white">{blinks.length}</span>
         </div>
         {alert && (
-          <div className="p-4 bg-red-600 text-white rounded font-semibold text-center w-full shadow-md">
-            Alert! Abnormal blink pattern detected!
+          <div>
+            <div className="p-4 bg-red-600 text-white rounded font-semibold text-center w-full shadow-md">
+              Alert! Abnormal blink pattern detected!
+            </div>
+            <div className="p-5 ">
+              Reset counter
+            </div>
           </div>
         )}
       </div>
