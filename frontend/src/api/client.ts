@@ -38,13 +38,14 @@ export type StatusResponse = {
     seconds_until_reset: number;
     alert_triggered: boolean;
     alert_time: number | null;
-    sensing_enabled: boolean;
-    calibration_remaining_s: number;
-    selected_device_index: number | null;
-    selected_device_name: string | null;
-    feature_value: number | null;
-    threshold_value: number | null;
-    background_level: number | null;
+    // Optional fields for newer backends; server.py may omit them.
+    sensing_enabled?: boolean;
+    calibration_remaining_s?: number;
+    selected_device_index?: number | null;
+    selected_device_name?: string | null;
+    feature_value?: number | null;
+    threshold_value?: number | null;
+    background_level?: number | null;
 };
 
 export type StartResponse = { ok: boolean; message: string };

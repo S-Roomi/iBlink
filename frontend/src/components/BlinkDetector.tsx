@@ -57,8 +57,8 @@ export default function BlinkDetector({
       ? `${Math.ceil(status.seconds_until_reset)}s`
       : "Ready";
   const calibrationState =
-    status?.running && !status.sensing_enabled
-      ? `${Math.ceil(status.calibration_remaining_s)}s remaining`
+    status?.running && status.sensing_enabled === false
+      ? `${Math.ceil(status.calibration_remaining_s ?? 0)}s remaining`
       : status?.running
         ? "Monitoring"
         : "Idle";

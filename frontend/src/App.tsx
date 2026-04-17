@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, api, type DeviceInfo, type StatusResponse } from "./api/client";
 import BlinkDetector from "./components/BlinkDetector";
-import ChartPanel from "./components/ChartPanel";
 import "./App.css";
 
 function App() {
@@ -9,12 +8,10 @@ function App() {
   const [deviceIndex, setDeviceIndex] = useState<string>("");
   const [status, setStatus] = useState<StatusResponse | null>(null);
   const [error, setError] = useState("");
-  const [chartTick, setChartTick] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [connectionState, setConnectionState] = useState<"idle" | "polling" | "live">("idle");
   const wsRef = useRef<WebSocket | null>(null);
 
-  const chartSrc = useMemo(() => `${api.chartUrl()}?dpi=100&t=${chartTick}`, [chartTick]);
   const connectionLabel = useMemo(() => {
     if (connectionState === "live") return "Live WebSocket stream connected";
     if (connectionState === "polling") return "REST polling fallback active";
@@ -42,7 +39,6 @@ function App() {
     try {
       const s = await api.getStatus();
       setStatus(s);
-      setChartTick(Date.now());
       setError("");
       setConnectionState((current) => (current === "live" ? current : "polling"));
     } catch (e) {
@@ -72,7 +68,6 @@ function App() {
         const msg = JSON.parse(evt.data);
         if (msg.type === "status") {
           setStatus(msg.data as StatusResponse);
-          setChartTick(Date.now());
           setConnectionState("live");
         } else if (msg.type === "no_session") {
           setStatus(null);
@@ -162,13 +157,10 @@ function App() {
           <p className="app-subtitle">A clean React control surface for the FastAPI blink detection API</p>
         </div>
 
-        <div className="status-pill">
-          <span
-            className={`status-dot ${
-              status?.alert_triggered ? "status-dot--alert" : status?.running ? "status-dot--running" : ""
-            }`}
-          />
-          <span>{connectionLabel}</span>
+        <div className={`alert-panel ${status?.alert_triggered ? "alert-panel--triggered" : ""}`}>
+          <p className="alert-panel__eyebrow">Alert status</p>
+          <p className="alert-panel__value">{status?.alert_triggered ? "TRIGGERED" : "MONITORING"}</p>
+          <p className="alert-panel__hint">{connectionLabel}</p>
         </div>
       </header>
 
@@ -186,15 +178,6 @@ function App() {
             error={error}
             busy={busy}
             connectionLabel={connectionLabel}
-          />
-        </section>
-
-        <section className="panel">
-          <ChartPanel
-            chartSrc={chartSrc}
-            onRefresh={() => setChartTick(Date.now())}
-            hasSession={Boolean(status?.running)}
-            alertTriggered={Boolean(status?.alert_triggered)}
           />
         </section>
       </div>

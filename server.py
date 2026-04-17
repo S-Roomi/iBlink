@@ -82,7 +82,7 @@ DEFAULTS = dict(
     chirp_duration  = 0.04,      # seconds
     face_dist_min   = 0.3,       # metres
     face_dist_max   = 0.9,
-    threshold_mult  = 3.0,
+    threshold_mult  = 2.8,
     refractory_s    = 0.35,
     calibration_s   = 3.0,
     smooth_window   = 3,
@@ -189,6 +189,8 @@ class BlinkListener:
     """
 
     BREATH_CUTOFF_HZ = 1.0
+    NOISE_GATE_MULT = 2.8
+    MIN_DERIV_GATE = 0.005
 
     def __init__(self, cfg: SessionConfig):
         self.sr             = cfg.sample_rate
@@ -225,6 +227,8 @@ class BlinkListener:
 
         self._bg_level: Optional[float] = None
         self._bg_alpha = 0.02
+        self._above_threshold = False
+        self._peak_feature = 0.0
 
         self.blink_count = 0
         self.status_msg  = "Idle"
@@ -351,13 +355,38 @@ class BlinkListener:
                 )
 
         threshold = self._bg_level * self.threshold_mult
-        self.thresh_history.append(threshold)
+
+        # Robustly gate against idle noise using median + k * MAD from
+        # recent derivative history. This significantly reduces false blinks
+        # when user is still.
+        recent = np.array(list(self.deriv_history)[-30:], dtype=np.float32)
+        noise_gate = 0.0
+        if len(recent) >= 10:
+            med = float(np.median(recent))
+            mad = float(np.median(np.abs(recent - med)))
+            robust_sigma = 1.4826 * mad
+            noise_gate = med + self.NOISE_GATE_MULT * robust_sigma
+
+        detection_gate = max(threshold, noise_gate, self.MIN_DERIV_GATE)
+        self.thresh_history.append(detection_gate)
 
         refractory_chirps = int(self.refractory_s / self.chirp_dur)
         self._chirps_since_blink += 1
-        if feature > threshold and self._chirps_since_blink >= refractory_chirps:
-            self._chirps_since_blink = 0
-            return True
+
+        # Count one blink per above-threshold excursion to avoid overcounting
+        # when the feature stays elevated across consecutive chirps.
+        if feature > detection_gate:
+            self._above_threshold = True
+            self._peak_feature = max(self._peak_feature, feature)
+            return False
+
+        if self._above_threshold:
+            self._above_threshold = False
+            peak_feature = self._peak_feature
+            self._peak_feature = 0.0
+            if peak_feature > detection_gate and self._chirps_since_blink >= refractory_chirps:
+                self._chirps_since_blink = 0
+                return True
         return False
 
     # ── alert logic ───────────────────────────────────────────────────────────
@@ -373,6 +402,10 @@ class BlinkListener:
             self.alert_triggered = True
             self.alert_time      = now
             self.status_msg      = "ROBBERY ALERT TRIGGERED"
+            # Reset the blink window immediately after threshold hit so
+            # subsequent counting starts fresh.
+            self._blink_times.clear()
+            self.blinks_in_window = 0
 
     def seconds_until_window_reset(self) -> float:
         if not self._blink_times:
@@ -413,6 +446,14 @@ class BlinkListener:
                 elapsed = time.time() - self._start_wall_time
                 if elapsed >= self.sensing_delay_s:
                     self._sensing_enabled = True
+                    # Re-baseline detector at sensing start so startup noise
+                    # does not contribute to blink counting.
+                    self._phase_raw.clear()
+                    self.deriv_history.clear()
+                    self.thresh_history.clear()
+                    self._bg_level = None
+                    self._above_threshold = False
+                    self._peak_feature = 0.0
                     if self._static_clutter is None:
                         self.status_msg = (
                             f"Calibrating for {self.calibration_s:.0f}s — sit still…"
