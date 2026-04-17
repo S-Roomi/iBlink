@@ -56,6 +56,17 @@ export default function BlinkDetector({
     status?.running && status.blinks_in_window > 0
       ? `${Math.ceil(status.seconds_until_reset)}s`
       : "Ready";
+  const calibrationState =
+    status?.running && !status.sensing_enabled
+      ? `${Math.ceil(status.calibration_remaining_s)}s remaining`
+      : status?.running
+        ? "Monitoring"
+        : "Idle";
+  const featureValue =
+    status?.feature_value != null ? status.feature_value.toFixed(4) : "--";
+  const thresholdValue =
+    status?.threshold_value != null ? status.threshold_value.toFixed(4) : "--";
+  const deviceValue = status?.selected_device_name ?? "System default";
 
   return (
     <section className="blinkdetector">
@@ -157,6 +168,17 @@ export default function BlinkDetector({
           value={secondsUntilReset}
           tone={status?.alert_triggered ? "alert" : "default"}
         />
+      </div>
+
+      <div className="metrics-grid metrics-grid--secondary">
+        <Metric
+          label="Selected device"
+          value={deviceValue}
+          hint={status?.selected_device_index != null ? `Index ${status.selected_device_index}` : "Auto"}
+        />
+        <Metric label="Detector state" value={calibrationState} />
+        <Metric label="Feature value" value={featureValue} />
+        <Metric label="Threshold value" value={thresholdValue} />
       </div>
     </section>
   );

@@ -227,6 +227,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.55);
+  min-width: 0;
 }
 
 .field-card {
@@ -311,6 +312,7 @@ body {
   gap: 10px;
   min-height: 156px;
   padding: 18px;
+  overflow: hidden;
 }
 
 .metric-card--alert {
@@ -324,14 +326,18 @@ body {
 
 .metric-value {
   color: var(--heading);
-  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-size: clamp(1.25rem, 1.8vw, 2rem);
   line-height: 1.05;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .metric-hint {
   color: var(--text-muted);
   font-size: 0.9rem;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .chart-frame {

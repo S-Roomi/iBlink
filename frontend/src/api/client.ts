@@ -4,6 +4,8 @@ export type DeviceInfo = {
     input_channels: number;
     output_channels: number;
     is_duplex: boolean;
+    default_sample_rate?: number | null;
+    host_api?: string | null;
 };
 
 export type SessionConfig = {
@@ -36,6 +38,13 @@ export type StatusResponse = {
     seconds_until_reset: number;
     alert_triggered: boolean;
     alert_time: number | null;
+    sensing_enabled: boolean;
+    calibration_remaining_s: number;
+    selected_device_index: number | null;
+    selected_device_name: string | null;
+    feature_value: number | null;
+    threshold_value: number | null;
+    background_level: number | null;
 };
 
 export type StartResponse = { ok: boolean; message: string };
