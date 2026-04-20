@@ -230,6 +230,10 @@ SPEED_OF_SOUND = 343.0
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+# we build the chirp using the hanning window
+# we use the Hanning Window (function) to reduce abrupt changes at the boundaries and helping to minimize spectral leakage
+# stopping energy from one frequency component spreads into others
+# we choose Hanning Window because it smooth bellshaped curve helps taper the signal at the edges -> ideal for signal processing
 def make_chirp(f_start, f_end, duration, sample_rate):
     t = np.linspace(0, duration, int(duration * sample_rate), endpoint=False)
     c = signal.chirp(t, f0=f_start, f1=f_end, t1=duration, method="linear")
@@ -260,10 +264,8 @@ def get_audio_devices():
 
 class BlinkListenerST:
     """
-    BlinkListener — paper-accurate implementation for Streamlit + Bank Robbery Alert.
-
-    Signal pipeline (per the BlinkListener paper, Liu et al. IMWUT 2021):
-    ┌──────────────────────────────────────────────────────────────────┐
+    Signal pipeline:
+    
     │ 1. TX: continuous ultrasonic FMCW chirp via speaker             │
     │ 2. RX: microphone captures direct + reflected signal            │
     │ 3. Beat signal = TX_chirp × RX_chunk  (de-chirp / mix-down)     │
@@ -272,13 +274,13 @@ class BlinkListenerST:
     │ 6. Extract PHASE of face bin per chirp                          │
     │ 7. Accumulate N samples → unwrap phase sequence                 │
     │ 8. Breathing cancellation: remove low-frequency trend           │
-    │    (high-pass filter; breathing ≈ 0.1–0.5 Hz; blink ≈ 4–10 Hz) │
+    │    (high-pass filter; breathing ≈ 0.1–0.5 Hz; blink ≈ 4–10 Hz)  │
     │ 9. Blink feature = absolute phase derivative of cleaned signal  │
     │10. Smooth feature; adaptive threshold; refractory gate          │
-    └──────────────────────────────────────────────────────────────────┘
+    
     """
 
-    # Breathing is ~0.1–0.5 Hz.  We high-pass above 1 Hz to kill it entirely
+    # Breathing is ~0.1–0.5 Hz.  we high-pass above 1 Hz to kill it entirely
     # while preserving blink transients (typical blink ~150–400 ms → 2.5–6 Hz).
     BREATH_CUTOFF_HZ = 1.0
 
@@ -394,7 +396,10 @@ class BlinkListenerST:
             return None
 
         rx   = rx_chunk[: self.chirp_n].astype(np.float32)
-        beat = rx * self.tx_chirp
+        # the frequency of the beat is proportional to how far away the reflector is
+        beat = rx * self.tx_chirp 
+        # we will produce a spectrum where each bin index corresponds to a specific distance
+        # a wall 2m away is in a different bin from the face at 0.7m
         spec = np.fft.rfft(beat, n=self.chirp_n)   # complex spectrum
 
         # ── Phase 1: collect calibration spectra ─────────────────────────────
@@ -403,7 +408,7 @@ class BlinkListenerST:
             self._calib_spectra_full.append(spec.copy())   # keep full spectrum for IQ variance
             if len(self._calib_spectra) >= self._calibration_n:
                 # Build mean static clutter template
-                self._static_clutter = np.mean(self._calib_spectra, axis=0)
+                self._static_clutter = np.mean(self._calib_spectra, axis=0) 
                 # ── Paper §5.2: select face bin by maximum 2D I-Q variance ──
                 # Breathing/heartbeat embedded interference creates an arc
                 # trajectory in I-Q space; that bin has the highest 2D spread.
@@ -414,9 +419,15 @@ class BlinkListenerST:
                 best_bin, best_var = lo, -1.0
                 for b in range(lo, hi):
                     col = stacked[:, b]
+                    # breathing arc makes the face bin uniquely large
+                    # each pump of blood creates a tiny recoil through your body. 
+                    # This is actually a well-studied phenomenon called ballistocardiography 
+                    # so the tiny movement draws an arc in I-Q space
                     var_iq = float(np.var(col.real) + np.var(col.imag))
                     if var_iq > best_var:
+                        # find the best bin
                         best_var, best_bin = var_iq, b
+                # lock the facebin till restart
                 self.face_bin = best_bin
                 dist = (self._range_bins[self.face_bin]
                         if self.face_bin < len(self._range_bins) else 0)
@@ -428,7 +439,8 @@ class BlinkListenerST:
             return None  # still calibrating
 
         # ── Phase 2: subtract static clutter and return face-bin phasor ──────
-        clean = spec - self._static_clutter
+        # we subtract the mean to remove the direct-path signal (speaker->mic) and all static room reflections
+        clean = spec - self._static_clutter 
         return complex(clean[self.face_bin])
 
     # ── phase unwrapping helper ───────────────────────────────────────────────
@@ -486,8 +498,8 @@ class BlinkListenerST:
 
         The embedded interference (breathing + heartbeat) moves the composite
         signal along an arc in I-Q space.  The centre of that arc is the
-        **optimal viewing position**: measuring signal amplitude *from* that
-        point maximises the blink-induced transient and minimises the
+        **optimal viewing position** (VP): measuring signal amplitude from that
+        point maximises the blink-induced transient and minimizes the
         continuous breathing-drift component.
 
         Returns None if there are too few points or the fit is degenerate.
@@ -529,13 +541,13 @@ class BlinkListenerST:
 
     def _detect_blink(self, face_phasor: complex) -> bool:
         """
-        Paper-accurate blink detection (BlinkListener §6, Liu et al. 2021):
+        Paper-accurate blink detection:
 
           1.  Buffer the raw complex phasor.
           2.  Maintain a continuously-updated optimal viewing position (VP)
               by fitting a circle (Pratt method) to the I-Q arc formed by
               breathing/heartbeat embedded interference (§6.2).
-          3.  Compute amplitude from the VP — this maximises the blink
+          3.  Compute amplitude from the VP which maximizes the blink
               transient and suppresses the breathing arc variation.
           4.  Large-movement guard: if the feature is >> 3× threshold,
               reset and restart (§6.3 Step 4).
@@ -576,7 +588,7 @@ class BlinkListenerST:
 
         # ── Step 2: compute amplitude feature ────────────────────────────────
         # Paper §6.2: measure distance from the optimal viewing position
-        # (arc centre) rather than the coordinate origin.  This maximises the
+        # (arc centre) rather than the coordinate origin.  This maximizes the
         # blink bump and makes breathing/heartbeat appear as a nearly-constant
         # radius, so it does not corrupt the derivative.
         if self._viewing_center is not None:
@@ -594,13 +606,14 @@ class BlinkListenerST:
         self._prev_amp_from_center = amp_from_vp
 
         # ── Step 3: fuse with breathing-cancelled phase derivative ────────────
-        # The paper notes that a blink causes BOTH an amplitude change (large)
+        # A blink causes BOTH an amplitude change (large)
         # and a phase change (small).  Using both improves robustness.
         phase_arr = np.array(self._phase_raw)
         clean_ph  = self._remove_breathing(phase_arr)
         d_phase   = abs(clean_ph[-1] - clean_ph[-2])
 
         # Weighted combination — amplitude-from-VP is the primary signal
+        # 70% of the amplitude and 30% from the phase change   
         feature_raw = 0.7 * d_feature + 0.3 * d_phase
         self.deriv_history.append(feature_raw)
 
@@ -679,7 +692,8 @@ class BlinkListenerST:
         return max(0.0, remaining)
 
     # ── audio callbacks ───────────────────────────────────────────────────────
-
+    # this is the audio callback function
+    # pyaudio calls this automatically every one chirp period to read microphone data and write speaker data
     def _tx_callback(self, in_data, frame_count, time_info, status):
         rx = np.frombuffer(in_data, dtype=np.int16).astype(np.float32) / 32768.0
         self.rx_queue.put(rx)
