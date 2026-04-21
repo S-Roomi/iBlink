@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, api, type DeviceInfo, type StatusResponse } from "./api/client";
 import BlinkDetector from "./components/BlinkDetector";
+import ChartPanel from "./components/ChartPanel";
 import "./App.css";
 
 function App() {
@@ -138,6 +139,12 @@ function App() {
       await loadDevices();
       await loadStatus();
     })();
+  }, []);
+
+  useEffect(() => {
+    if (connectionState === "live") {
+      return;
+    }
 
     const id = setInterval(() => {
       void loadStatus();
@@ -145,6 +152,11 @@ function App() {
 
     return () => {
       clearInterval(id);
+    };
+  }, [connectionState]);
+
+  useEffect(() => {
+    return () => {
       wsRef.current?.close();
     };
   }, []);
@@ -154,7 +166,7 @@ function App() {
       <header className="app-header">
         <div>
           <h1 className="app-title">iBlink</h1>
-          <p className="app-subtitle">A clean React control surface for the FastAPI blink detection API</p>
+          <p className="app-description">Monitoring and alerting system for bank robbery detection</p>
         </div>
 
         <div className={`alert-panel ${status?.alert_triggered ? "alert-panel--triggered" : ""}`}>
@@ -165,7 +177,7 @@ function App() {
       </header>
 
       <div className="app-grid">
-        <section className="panel">
+        <section className="panel panel--controls">
           <BlinkDetector
             devices={devices}
             deviceIndex={deviceIndex}
@@ -178,6 +190,12 @@ function App() {
             error={error}
             busy={busy}
             connectionLabel={connectionLabel}
+          />
+        </section>
+
+        <section className="panel">
+          <ChartPanel
+            alertTriggered={Boolean(status?.alert_triggered)}
           />
         </section>
       </div>

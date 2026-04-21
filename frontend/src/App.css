@@ -30,7 +30,7 @@ body {
 .app-shell {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 40px 20px 56px;
+  padding: 24px 16px 28px;
 }
 
 .app-header {
@@ -60,8 +60,9 @@ body {
 
 .app-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.28fr) minmax(340px, 0.72fr);
+  gap: 16px;
+  align-items: start;
 }
 
 .alert-panel {
@@ -110,13 +111,17 @@ body {
 
 .panel {
   border: 1px solid var(--border);
-  border-radius: 28px;
-  padding: 24px;
+  border-radius: 24px;
+  padding: 18px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 250, 242, 0.82)),
     var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(18px);
+}
+
+.panel--controls {
+  padding-top: 12px;
 }
 
 .section-heading {
@@ -196,10 +201,10 @@ body {
 }
 
 .hero-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  justify-content: flex-start;
+  justify-items: stretch;
   gap: 10px;
   flex: 1;
 }
@@ -207,9 +212,9 @@ body {
 .button {
   border: 0;
   border-radius: 999px;
-  min-width: 210px;
-  min-height: 56px;
-  padding: 12px 18px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 16px;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -239,6 +244,17 @@ body {
 .button--secondary {
   background: rgba(60, 49, 39, 0.08);
   color: var(--heading);
+}
+
+.button--stop {
+  background: linear-gradient(135deg, #425d8f, #5f7fba);
+  color: white;
+  box-shadow: 0 14px 28px rgba(66, 93, 143, 0.25);
+}
+
+.button--stop:disabled {
+  background: rgba(66, 93, 143, 0.22);
+  color: rgba(36, 39, 53, 0.85);
 }
 
 .button--ghost {
@@ -341,7 +357,7 @@ body {
 }
 
 .metrics-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-bottom: 14px;
 }
 
@@ -354,8 +370,8 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: 10px;
-  min-height: 156px;
-  padding: 18px;
+  min-height: 170px;
+  padding: 20px;
   overflow: hidden;
 }
 
@@ -370,7 +386,7 @@ body {
 
 .metric-value {
   color: var(--heading);
-  font-size: clamp(1.25rem, 1.8vw, 2rem);
+  font-size: clamp(1.1rem, 1.55vw, 1.8rem);
   line-height: 1.05;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -378,7 +394,7 @@ body {
 
 .metric-hint {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   line-height: 1.4;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -388,7 +404,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 420px;
+  min-height: 260px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 24px;
@@ -397,9 +413,69 @@ body {
     linear-gradient(180deg, #10151b, #181f27);
 }
 
+  .chart-frame--instructions {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 18px;
+    border-color: rgba(170, 142, 96, 0.32);
+    background:
+      radial-gradient(circle at top right, rgba(255, 252, 243, 0.95), transparent 42%),
+      linear-gradient(140deg, #faf0e6 0%, #f7e7ce 55%, #efe0c6 100%);
+  }
+
 .chart-frame--alert {
   box-shadow: inset 0 0 0 1px rgba(186, 77, 62, 0.34);
 }
+
+  .instruction-card {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    color: #3e2f1f;
+  }
+
+  .instruction-card__lead {
+    margin: 0;
+    color: #302113;
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .instruction-card__body {
+    margin: 0;
+    color: rgba(56, 38, 22, 0.9);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .instruction-card__steps {
+    display: grid;
+    gap: 8px;
+    margin-top: 2px;
+    padding: 14px;
+    border: 1px solid rgba(132, 103, 61, 0.2);
+    border-radius: 18px;
+    background: rgba(255, 251, 244, 0.72);
+  }
+
+  .instruction-card__steps p {
+    margin: 0;
+    color: rgba(58, 40, 25, 0.92);
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .instruction-card__steps p:nth-child(n + 3) {
+    margin-top: 2px;
+  }
+
+  .instruction-card__closing {
+    margin: 0;
+    color: #2d1f11;
+    font-size: 1rem;
+    font-weight: 700;
+  }
 
 .chartpanel-image {
   display: block;
@@ -440,6 +516,10 @@ body {
   .control-grid,
   .metrics-grid {
     grid-template-columns: 1fr;
+  }
+
+  .app-grid > .panel:last-child {
+    display: none;
   }
 
   .hero-card {
