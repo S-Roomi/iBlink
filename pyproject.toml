@@ -1,0 +1,4 @@
+[dependency-groups]
+dev = [
+    "streamlit>=1.56.0",
+]
