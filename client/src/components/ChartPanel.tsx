@@ -7,7 +7,6 @@ export default function ChartPanel({ alertTriggered }: Props) {
     <section className="chartpanel">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Instructions</p>
           <h2 className="section-title">What to do next</h2>
         </div>
       </div>

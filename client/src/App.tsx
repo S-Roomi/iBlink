@@ -142,7 +142,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (connectionState === "live") {
+    if (connectionState !== "polling") {
       return;
     }
 
@@ -168,12 +168,6 @@ function App() {
           <h1 className="app-title">iBlink</h1>
           <p className="app-description">Monitoring and alerting system for bank robbery detection</p>
         </div>
-
-        <div className={`alert-panel ${status?.alert_triggered ? "alert-panel--triggered" : ""}`}>
-          <p className="alert-panel__eyebrow">Alert status</p>
-          <p className="alert-panel__value">{status?.alert_triggered ? "TRIGGERED" : "MONITORING"}</p>
-          <p className="alert-panel__hint">{connectionLabel}</p>
-        </div>
       </header>
 
       <div className="app-grid">
@@ -190,12 +184,6 @@ function App() {
             error={error}
             busy={busy}
             connectionLabel={connectionLabel}
-          />
-        </section>
-
-        <section className="panel">
-          <ChartPanel
-            alertTriggered={Boolean(status?.alert_triggered)}
           />
         </section>
       </div>
